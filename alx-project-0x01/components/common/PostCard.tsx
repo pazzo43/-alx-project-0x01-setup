@@ -1,268 +1,76 @@
-Step 1: Create Next.js Application
-First, create the Next.js project with the required configuration:
-npx create-next-app@latest alx-project-0x01
-
-When prompted, select:
-
-TypeScript: Yes
-
-ESLint: Yes
-
-Tailwind CSS: Yes
-
-src/ directory: No
-
-App Router: No (we'll use Pages Router)
-
-Import alias: Yes
-
-Step 2: Initialize Git Repository
-cd alx-project-0x01
-git init
-git add .
-git commit -m "Initial Next.js setup with TypeScript, Tailwind CSS, and ESLint"
-
-Step 3: Configure Global Styles
-Replace the content of styles/globals.css:
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-Step 4: Update Home Page
-Replace the content of pages/index.tsx:
-const Home: React.FC = () => {
-  return (
-    <div className="flex justify-center items-center h-screen">
-      <h1 className="text-7xl font-thin">Welcome Page</h1>
-    </div>
-  )
-}
-
-export default Home;
-
-Step 5: Create Directory Structure and Components
-Create components/common/Button.tsx:
-import React from 'react';
-
-interface ButtonProps {
-  children: React.ReactNode;
-  onClick?: () => void;
-  type?: 'button' | 'submit' | 'reset';
-  variant?: 'primary' | 'secondary';
-  disabled?: boolean;
-}
-
-const Button: React.FC<ButtonProps> = ({
-  children,
-  onClick,
-  type = 'button',
-  variant = 'primary',
-  disabled = false,
-}) => {
-  const baseClasses = 'px-4 py-2 rounded-lg font-medium transition-colors duration-200';
-  const variantClasses = {
-    primary: 'bg-blue-500 text-white hover:bg-blue-600 disabled:bg-blue-300',
-    secondary: 'bg-gray-500 text-white hover:bg-gray-600 disabled:bg-gray-300',
-  };
-
-  return (
-    <button
-      type={type}
-      onClick={onClick}
-      disabled={disabled}
-      className={`${baseClasses} ${variantClasses[variant]}`}
-    >
-      {children}
-    </button>
-  );
-};
-
-export default Button;
-
-Create components/common/PostCard.tsx:
-import React from 'react';
-
-interface Post {
+1. interfaces/index.ts
+export interface PostProps {
+  userId: number;
   id: number;
   title: string;
   body: string;
-  userId: number;
 }
+components/common/PostCard.tsx
+import { PostProps } from "@/interfaces";
 
-interface PostCardProps {
-  post: Post;
-}
-
-const PostCard: React.FC<PostCardProps> = ({ post }) => {
+const PostCard: React.FC<PostProps> = ({ title, body, userId, id }) => {
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-200">
-      <h3 className="text-xl font-semibold text-gray-800 mb-2">{post.title}</h3>
-      <p className="text-gray-600 line-clamp-3">{post.body}</p>
-      <div className="mt-4 flex justify-between items-center">
-        <span className="text-sm text-gray-500">User ID: {post.userId}</span>
-        <span className="text-sm text-gray-500">Post ID: {post.id}</span>
+    <div className="max-w-xl mx-auto my-6 p-6 bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
+      <div className="mb-4">
+        <h2 className="text-2xl font-semibold text-gray-800">{title}</h2>
+      </div>
+      <p className="text-gray-600">{body}</p>
+      <div className="mt-4 flex items-center justify-between text-sm text-gray-500">
+        <span>User ID: {userId}</span>
+        <span>Post ID: {id}</span>
       </div>
     </div>
   );
 };
 
 export default PostCard;
+pages/posts/index.tsx
+Note: The type definition for the Posts component should be adjusted to accept an object containing the posts array, rather than being typed as an array itself. The type should be React.FC<{ posts: PostProps[] }> to correctly match the data returned by getStaticProps. I will assume this is what you intended for correct TypeScript usage.
 
-Create components/layout/Header.tsx:
-import React from 'react';
-import Link from 'next/link';
+  import PostCard from "@/components/common/PostCard";
+import Header from "@/components/layout/Header";
+import { PostProps } from "@/interfaces";
+import { GetStaticProps } from "next"; // Recommended import for proper GetStaticProps typing
 
-const Header: React.FC = () => {
+// Corrected type for the component props
+interface PostsPageProps {
+  posts: PostProps[];
+}
+
+const Posts: React.FC<PostsPageProps> = ({ posts }) => {
+  console.log(posts)
   return (
-    <header className="bg-white shadow-sm border-b">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          <div className="flex items-center">
-            <Link href="/" className="text-xl font-bold text-gray-900">
-              ALX Project
-            </Link>
-          </div>
-          <nav className="flex space-x-8">
-            <Link
-              href="/"
-              className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-            >
-              Home
-            </Link>
-            <Link
-              href="/posts"
-              className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-            >
-              Posts
-            </Link>
-            <Link
-              href="/users"
-              className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-            >
-              Users
-            </Link>
-          </nav>
-        </div>
-      </div>
-    </header>
-  );
-};
-
-export default Header;
-
-Create components/layout/Footer.tsx:
-import React from 'react';
-
-const Footer: React.FC = () => {
-  return (
-    <footer className="bg-gray-800 text-white">
-      <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center">
-          <p className="text-sm">
-            © 2024 ALX Project. All rights reserved.
-          </p>
-          <p className="text-sm">
-            Built with Next.js, TypeScript & Tailwind CSS
-          </p>
-        </div>
-      </div>
-    </footer>
-  );
-};
-
-export default Footer;
-Create pages/posts/index.tsx:
-import React from 'react';
-
-const PostsPage: React.FC = () => {
-  return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Posts</h1>
-          <p className="text-lg text-gray-600">Browse through all the posts</p>
-        </div>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {/* Posts will be rendered here */}
-          <div className="text-center py-8">
-            <p className="text-gray-500">Posts content coming soon...</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default PostsPage;
-
-Create pages/users/index.tsx:
-import React from 'react';
-
-const UsersPage: React.FC = () => {
-  return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Users</h1>
-          <p className="text-lg text-gray-600">Explore our community of users</p>
-        </div>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {/* Users will be rendered here */}
-          <div className="text-center py-8">
-            <p className="text-gray-500">Users content coming soon...</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default UsersPage;
-
-Step 6: Update Layout
-Update pages/_app.tsx to include the Header and Footer:
-import '../styles/globals.css'
-import type { AppProps } from 'next/app'
-import Header from '../components/layout/Header'
-import Footer from '../components/layout/Footer'
-
-function MyApp({ Component, pageProps }: AppProps) {
-  return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen"> {/* Changed h-screen to min-h-screen for better layout */}
       <Header />
-      <main className="flex-grow">
-        <Component {...pageProps} />
+      <main className="p-4 flex-grow">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-semibold text-gray-800">Post Content</h1>
+          <button className="bg-blue-700 px-4 py-2 rounded-full text-white hover:bg-blue-800 transition-colors duration-200">
+            Add Post
+          </button>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {posts?.map((post: PostProps) => ( // Using a spread of 1, 2, or 3 columns for responsiveness
+              <PostCard {...post} key={post.id} />
+            ))
+          }
+        </div>
       </main>
-      <Footer />
     </div>
   )
 }
 
-export default MyApp
 
-Step 7: Run the Development Server
-npm run dev -- -p 3000
-Step 8: Verify the Application
-Open your browser and navigate to http://localhost:3000. You should see:
+export const getStaticProps: GetStaticProps<PostsPageProps> = async () => { // Added GetStaticProps typing
+  const response = await fetch("https://jsonplaceholder.typicode.com/posts")
+  const posts: PostProps[] = await response.json()
 
-A welcome page with "Welcome Page" in large thin font
+  return {
+    props: {
+      posts
+    }
+  }
+}
 
-A header with navigation links (Home, Posts, Users)
+export default Posts;
 
-A footer with copyright information
-
-Navigation between pages without reloads
-
-The basic structure is now set up with:
-
-.Next.js with TypeScript
-
-.Tailwind CSS configuration
-
-.ESLint setup
-
-.Component structure
-
-.Page routing
-
-.Responsive design foundation
